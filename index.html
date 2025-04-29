@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planilha Lotofácil</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        .instructions {
+            background-color: #e0f7fa;
+            color: #00796b;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            max-width: 500px;
+            margin: 0 auto 20px auto;
+            border: 1px solid #b2ebf2;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(5, 50px);
+            grid-gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .number {
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            background-color: #f9f9f9;
+        }
+        .number.selected {
+            background-color: #2196f3; /* Azul para números fixos */
+            color: white;
+            border-color: #2196f3;
+        }
+        .number.previous {
+            background-color: #4caf50; /* Verde para números variáveis */
+            color: white;
+            border-color: #4caf50;
+        }
+        .game {
+            margin-top: 20px;
+        }
+        .game div {
+            font-size: 16px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Planilha Lotofácil</h1>
+
+    <!-- Mensagem de instrução adicionada aqui -->
+    <div class="instructions">
+        Selecione 4 dezenas fixas com duplo clique e 16 variáveis com clique simples
+    </div>
+
+    <div class="grid" id="numberGrid"></div>
+    <button onclick="generateGames()">Gerar Jogos</button>
+    <div id="games" class="game"></div>
+
+    <script>
+        const numbers = Array.from({ length: 25 }, (_, i) => i + 1);
+
+        let fixedNumbers = [];
+        let variableNumbers = [];
+
+        function createGrid() {
+            const grid = document.getElementById('numberGrid');
+            numbers.forEach(num => {
+                const div = document.createElement('div');
+                div.className = 'number';
+                div.textContent = num;
+                div.onclick = () => toggleVariable(div, num); // Clique simples para variáveis
+                div.ondblclick = () => toggleFixed(div, num); // Duplo clique para fixos
+                grid.appendChild(div);
+            });
+        }
+
+        function toggleFixed(element, num) {
+            if (fixedNumbers.includes(num)) {
+                fixedNumbers = fixedNumbers.filter(n => n !== num);
+                element.classList.remove('selected');
+            } else {
+                if (fixedNumbers.length < 4) {
+                    fixedNumbers.push(num);
+                    element.classList.add('selected');
+                } else {
+                    alert('Você já selecionou 4 números fixos!');
+                }
+            }
+        }
+
+        function toggleVariable(element, num) {
+            if (variableNumbers.includes(num)) {
+                variableNumbers = variableNumbers.filter(n => n !== num);
+                element.classList.remove('previous');
+            } else {
+                if (variableNumbers.length < 16) { // Limitado a 16 variáveis
+                    variableNumbers.push(num);
+                    element.classList.add('previous');
+                } else {
+                    alert('Você já selecionou 16 números variáveis!');
+                }
+            }
+        }
+
+        function generateGames() {
+            const gamesContainer = document.getElementById('games');
+            gamesContainer.innerHTML = '';
+
+            if (fixedNumbers.length < 4) {
+                alert('Selecione 4 números fixos antes de gerar os jogos.');
+                return;
+            }
+
+            if (variableNumbers.length < 16) {
+                alert('Selecione 16 números variáveis antes de gerar os jogos.');
+                return;
+            }
+
+            let selectedNumbers = [...fixedNumbers, ...variableNumbers]; // Total de 20 dezenas selecionadas
+            let generatedGames = [];
+
+            for (let i = 0; i < 5; i++) {
+                let game = [...fixedNumbers]; // Inclui sempre as 4 dezenas fixas
+                let remainingCount = 15 - fixedNumbers.length;
+
+                // Escolher 11 dezenas adicionais das 16 variáveis
+                shuffleArray(variableNumbers);
+                game.push(...variableNumbers.slice(0, remainingCount));
+
+                game.sort((a, b) => a - b);
+                generatedGames.push(game);
+            }
+
+            // Exibir os jogos gerados
+            generatedGames.forEach((game, index) => {
+                const gameDiv = document.createElement('div');
+                gameDiv.textContent = `Jogo ${index + 1}: {${game.join(', ')}}`;
+                gamesContainer.appendChild(gameDiv);
+            });
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        createGrid();
+    </script>
+</body>
+</html>
